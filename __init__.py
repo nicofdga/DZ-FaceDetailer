@@ -1,7 +1,3 @@
-from .FaceDetailer import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
-import requests
-import os, sys
-import subprocess
 
 try:
     import ultralytics as ul
@@ -12,6 +8,11 @@ except:
 
     requirements_path = os.path.join(my_path, "requirements.txt")
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
+    from .FaceDetailer import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
+    import requests
+    import os, sys
+    import subprocess
+
 
 model = "https://huggingface.co/Bingsu/adetailer/resolve/main/face_yolov8n.pt"
 
