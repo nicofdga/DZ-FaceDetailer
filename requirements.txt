@@ -1,3 +1,4 @@
 ultralytics
 mediapipe
 pillow
+colorama
