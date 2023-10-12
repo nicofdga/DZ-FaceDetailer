@@ -1,3 +1,5 @@
+# I ^^. I don't have time to maintain this node right now due to work, but when I do I will continue to update it and add new features.
+
 # Face Detailer node
 
 ![Project Logo/Image](link_to_logo_or_image.png) <!-- Optional: Add a logo or an image related to your project -->
