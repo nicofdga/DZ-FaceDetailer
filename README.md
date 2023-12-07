@@ -19,10 +19,10 @@ Face Detailer is a custom node for the "ComfyUI" framework inspired by !After De
 
 ## Features
 
-- Face detection using Mediapipe and YOLOv8n.
+- Face detection using Mediapipe.
 - Face mask generation for detected faces.
 - Latent/sample mapping to generated masks for face manipulation.
-- Generate new faces using Stable Diffusion AI.
+- Generate new faces using Stable Diffusion.
 - Replace faces using LoRa or embeddings etc.
 
 ## Installation
