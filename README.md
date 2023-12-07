@@ -1,7 +1,5 @@
 # Face Detailer node
 
-![Project Logo/Image](link_to_logo_or_image.png) <!-- Optional: Add a logo or an image related to your project -->
-
 ## Face Detailer - Custom Node for ComfyUI (Stable Diffusion)
 
 Face Detailer is a custom node for the "ComfyUI" framework inspired by !After Detailer extension from auto1111, it allows you to detect faces using Mediapipe and YOLOv8n to create masks for the detected faces. This custom node enables you to generate new faces, replace faces, and perform other face manipulation tasks using Stable Diffusion AI.
