@@ -1,26 +1,33 @@
 import torch
 from mediapipe import solutions
 import cv2
-from colorama import init, Fore, Back, Style
 import numpy as np
 from PIL import Image, ImageFilter
 from ultralytics import YOLO
 import os
+import comfy
+import nodes
+from folder_paths import base_path
 
-
-base_path = os.path.dirname(os.path.realpath(__file__))
-face_model_path = os.path.join(
-    base_path, "../../custom_nodes/facedetailer/yolo/face_yolov8n.pt")
+face_model_path = os.path.join(base_path, "models/dz_facedetailer/yolo/face_yolov8n.pt")
 MASK_CONTROL = ["dilate", "erode", "disabled"]
 MASK_TYPE = ["box", "face"]
-init()
-
 
 class FaceDetailer:
     @classmethod
     def INPUT_TYPES(s):
         return {"required":
                 {
+                    "model": ("MODEL",),
+                    "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
+                    "steps": ("INT", {"default": 20, "min": 1, "max": 10000}),
+                    "cfg": ("FLOAT", {"default": 8.0, "min": 0.0, "max": 100.0, "step": 0.1, "round": 0.01}),
+                    "sampler_name": (comfy.samplers.KSampler.SAMPLERS, ),
+                    "scheduler": (comfy.samplers.KSampler.SCHEDULERS, ),
+                    "positive": ("CONDITIONING", ),
+                    "negative": ("CONDITIONING", ),
+                    "latent_image": ("LATENT", ),
+                    "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01}),
                     "latent_image": ("LATENT", ),
                     "vae": ("VAE",),
                     "mask_blur": ("INT", {"default": 0, "min": 0, "max": 100}),
@@ -37,68 +44,46 @@ class FaceDetailer:
 
     CATEGORY = "face_detailer"
 
-    def detailer(self, latent_image, vae, mask_blur, mask_type, mask_control, dilate_mask_value, erode_mask_value):
-
-        print(Fore.GREEN + "+ Face detailer initialized" + Style.RESET_ALL)
-
+    def detailer(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise, vae, mask_blur, mask_type, mask_control, dilate_mask_value, erode_mask_value):
         # input latent decoded to tensor image for processing
         input_tensor_img = vae.decode(latent_image["samples"])
-
         # convert input latent to numpy array for yolo model
         img = image2nparray(input_tensor_img, False)
-
         # Process the face mesh or make the face box for masking
         if mask_type == "box":
             try:
                 final_mask = facebox_mask(img, mask_type)
             except:
-                print(
-                    Fore.RED + "- Failed to make box mask! returning the input latent" + Style.RESET_ALL)
                 return (latent_image, )
         else:
             try:
                 final_mask = facemesh_mask(img, mask_type)
             except:
-                print(
-                    Fore.RED + "- Failed to make face mask! returning the input latent" + Style.RESET_ALL)
                 return (latent_image, )
-
-        
-
         # Erode/Dilate mask
         if mask_control == "dilate":
             if dilate_mask_value > 0:
                 final_mask = dilate_mask(final_mask, dilate_mask_value)
-            else:
-                print(Fore.RED + "- Mask disabled due to value zero!" +
-                      Style.RESET_ALL)
         elif mask_control == "erode":
             if erode_mask_value > 0:
                 final_mask = erode_mask(final_mask, erode_mask_value)
-            else:
-                print(Fore.RED + "- Mask disabled due to value zero!" +
-                      Style.RESET_ALL)
-        else:
-            print(Fore.RED + "- Mask control disabled, initializing masking without erode/dilate option!" + Style.RESET_ALL)
-
-        if mask_blur > 0:   
+        if mask_blur > 0:
             final_mask_image = Image.fromarray(final_mask)
-            blurred_mask_image = final_mask_image.filter(ImageFilter.GaussianBlur(radius=mask_blur))
-
+            blurred_mask_image = final_mask_image.filter(
+                ImageFilter.GaussianBlur(radius=mask_blur))
             final_mask = np.array(blurred_mask_image)
-       
 
-            
-        final_mask = np.array(Image.fromarray(final_mask).getchannel('A')).astype(np.float32) / 255.0
+        final_mask = np.array(Image.fromarray(
+            final_mask).getchannel('A')).astype(np.float32) / 255.0
         # Convert mask to tensor and assign the mask to the input tensor
         final_mask = 1. - torch.from_numpy(final_mask)
 
         latent_mask = set_mask(latent_image, final_mask)
 
-        print(Fore.GREEN +
-              "+ Process finished, returning the new latent" + Style.RESET_ALL)
+        latent = nodes.common_ksampler(
+            model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_mask, denoise=denoise)
 
-        return (latent_mask, final_mask,)
+        return (latent[0], final_mask,)
 
 
 def facebox_mask(image, mask_type):
@@ -128,13 +113,9 @@ def facebox_mask(image, mask_type):
     new_x_max = int(center_x + new_width / 2)
     new_y_max = int(center_y + new_height / 2)
 
-    print(Fore.GREEN + "+ Face found, starting masking process..." + Style.RESET_ALL)
-    print(Fore.GREEN + "+ Mask type:" + Style.RESET_ALL, mask_type)
-
     # Create an empty image with alpha and set the square in the face location
     mask = np.zeros((image.shape[0], image.shape[1], 4), dtype=np.uint8)
-    cv2.rectangle(mask, (new_x_min, new_y_min),
-                  (new_x_max, new_y_max), (0, 0, 0, 255), -1)
+    cv2.rectangle(mask, (new_x_min, new_y_min), (new_x_max, new_y_max), (0, 0, 0, 255), -1)
     mask[:, :, 3] = ~mask[:, :, 3]  # invert the mask
 
     return mask
@@ -144,8 +125,6 @@ def facemesh_mask(image, mask_type):
     mp_face_mesh = solutions.face_mesh
     face_mesh = mp_face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1)
     results = face_mesh.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    print(Fore.GREEN + "+ Face found, starting masking process..." + Style.RESET_ALL)
-    print(Fore.GREEN + "+ Mask type:" + Style.RESET_ALL, mask_type)
     if results.multi_face_landmarks:
         for face_landmarks in results.multi_face_landmarks:
             # List of detected face points
@@ -196,8 +175,7 @@ def image2nparray(image, BGR):
         returns: Numpy array.
 
     """
-    narray = np.clip(255. * image.cpu().numpy().squeeze(),
-                     0, 255).astype(np.uint8)
+    narray = np.clip(255. * image.cpu().numpy().squeeze(), 0, 255).astype(np.uint8)
 
     if BGR:
         return narray
@@ -210,12 +188,3 @@ def set_mask(samples, mask):
     print(s)
     s["noise_mask"] = mask.reshape((-1, 1, mask.shape[-2], mask.shape[-1]))
     return s
-
-
-NODE_CLASS_MAPPINGS = {
-    "DZ_Face_Detailer": FaceDetailer,
-}
-
-NODE_DISPLAY_NAME_MAPPINGS = {
-    "DZ_Face_Detailer": "Face Detailer",
-}

@@ -2,39 +2,68 @@
 import requests
 import os, sys
 import subprocess
-
+from colorama import Fore, Back, Style
+from tqdm import tqdm
+from pip._internal import main as pip_main
+from folder_paths import base_path
+from pathlib import Path
 
 try:
-    print("!! Trying to start the node")
-    from .FaceDetailer import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
+    print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Installing requirements' + Fore.RESET)
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
 except:
-    print("!! Requirements need to be installed")
-    my_path = os.path.dirname(__file__)
-    requirements_path = os.path.join(my_path, "requirements.txt")
-    print("!! Installing requirements...")
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', requirements_path])
-    print("!! Installing requirements finished...")
-    from .FaceDetailer import NODE_CLASS_MAPPINGS, NODE_DISPLAY_NAME_MAPPINGS
-
+    print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Installing requirements failed' + Fore.RESET)
 
 model = "https://huggingface.co/Bingsu/adetailer/resolve/main/face_yolov8n.pt"
 
-save_loc = "./custom_nodes/facedetailer/yolo/face_yolov8n.pt"
+save_loc = f"{base_path}\models\dz_facedetailer\yolo\/face_yolov8n.pt"
 
 save_dir = os.path.dirname(save_loc)
 
-if not os.path.exists(save_dir):
-    print("!! Creating face_detailer models dir because it doesn't exist")
-    os.makedirs(save_dir)
-
-    print("!! face_yolov8n model downloading...")
-    response = requests.get(model)
-
-    if response.status_code == 200:
-        with open(save_loc, 'wb') as file:
-            file.write(response.content)
-        print("!! Model downloading finished.")
+def download_model():
+    if Path(save_loc).is_file():
+        print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Model already exists' + Fore.RESET)
     else:
-        print("!! Error while download! Report the issue to the repo or download the face_yolov8n.pt model manually from Bingsu hugginface's and put in models/facedetailer/")
+        print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Model doesnt exist' + Fore.RESET)
+        print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Downloading model' + Fore.RESET)
+        response = requests.get(model, stream=True)
 
-__all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']
+        try:
+            if response.status_code == 200:
+                total_size = int(response.headers.get('content-length', 0))
+                block_size = 1024  # 1 Kibibyte
+
+                # tqdm will display a progress bar
+                with open(save_loc, 'wb') as file, tqdm(
+                    desc='Downloading',
+                    total=total_size,
+                    unit='iB',
+                    unit_scale=True,
+                    unit_divisor=1024,
+                ) as bar:
+                    for data in response.iter_content(block_size):
+                        bar.update(len(data))
+                        file.write(data)
+
+                print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Model dowload finished' + Fore.RESET)
+        except requests.exceptions.RequestException as err:
+            print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Model download failed: {err}' + Fore.RESET)
+            print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Download it manually from: {model}' + Fore.RESET)
+            print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}And put it in /comfyui/models/dz_facedetailer/yolo/' + Fore.RESET)
+        except Exception as e:
+            print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}An unexpected error occurred: {e}' + Fore.RESET)
+
+if not os.path.exists(save_dir):
+    print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Creating models dir' + Fore.RESET)
+    os.makedirs(save_dir)
+else:
+    print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Model dir already exists' + Fore.RESET)
+    download_model()
+
+from .FaceDetailer import FaceDetailer
+
+NODE_CLASS_MAPPINGS = {
+    "DZ_Face_Detailer": FaceDetailer,
+}
+
+
