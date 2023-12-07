@@ -26,9 +26,4 @@ Face Detailer is a custom node for the "ComfyUI" framework inspired by !After De
 - Replace faces using LoRa or embeddings etc.
 
 ## Installation
-Drag the node with folder in custom_nodes folder and everything will setup automatically 
-
-## License
-Specify the license under which your project is distributed. For example:
-
-This project is licensed under the MIT License.
+clone the repo in custom_nodes folder
