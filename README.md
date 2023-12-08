@@ -26,4 +26,4 @@ DZ FaceDetailer is a custom node for the "ComfyUI" framework inspired by !After 
 - Replace faces using LoRa or embeddings etc.
 
 ## Installation
-clone the repo in custom_nodes folder
+clone the repo https://github.com/daxthin/DZ-FaceDetailer.git in custom_nodes folder
