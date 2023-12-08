@@ -12,10 +12,6 @@ DZ FaceDetailer is a custom node for the "ComfyUI" framework inspired by !After 
 
 - [Features](#features)
 - [Installation](#installation)
-- [Usage](#usage)
-- [Examples](#examples)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Features
 
