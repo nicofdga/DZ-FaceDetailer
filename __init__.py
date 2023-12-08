@@ -10,7 +10,7 @@ from pathlib import Path
 
 try:
     print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Installing requirements' + Fore.RESET)
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", f"{base_path}\\custom_nodes\\DZ-FaceDetailer\\requirements.txt"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", f"{base_path}\custom_nodes\DZ-FaceDetailer\/requirements.txt"])
 except:
     print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Installing requirements failed' + Fore.RESET)
 
