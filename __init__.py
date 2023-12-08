@@ -21,7 +21,7 @@ model_url = "https://huggingface.co/Bingsu/adetailer/resolve/main/face_yolov8n.p
 save_loc = os.path.join(models_dir, "DZ-FaceDetailer\yolo")
 
 def download_model():
-    if Path(save_loc).is_file():
+    if Path(os.path.join(save_loc, "face_yolov8n.pt")).is_file():
         print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Model already exists' + Fore.RESET)
     else:
         print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Model doesnt exist' + Fore.RESET)
@@ -45,7 +45,7 @@ def download_model():
                         bar.update(len(data))
                         file.write(data)
 
-                print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Model dowload finished' + Fore.RESET)
+                print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Model download finished' + Fore.RESET)
         except requests.exceptions.RequestException as err:
             print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Model download failed: {err}' + Fore.RESET)
             print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Download it manually from: {model_url}' + Fore.RESET)
@@ -54,11 +54,11 @@ def download_model():
             print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}An unexpected error occurred: {e}' + Fore.RESET)
 
 if not os.path.exists(save_loc):
-    print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Creating models dir' + Fore.RESET)
+    print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Creating models directory' + Fore.RESET)
     os.makedirs(save_loc)
     download_model()
 else:
-    print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Model dir already exists' + Fore.RESET)
+    print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Model directory already exists' + Fore.RESET)
     download_model()
 
 NODE_CLASS_MAPPINGS = {
