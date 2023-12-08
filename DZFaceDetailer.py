@@ -9,7 +9,7 @@ import comfy
 import nodes
 from folder_paths import base_path
 
-face_model_path = os.path.join(base_path, "models/dz_facedetailer/yolo/face_yolov8n.pt")
+face_model_path = os.path.join(base_path, "models/DZ-FaceDetailer/yolo/face_yolov8n.pt")
 MASK_CONTROL = ["dilate", "erode", "disabled"]
 MASK_TYPE = ["box", "face"]
 

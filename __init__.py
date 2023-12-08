@@ -10,13 +10,13 @@ from pathlib import Path
 
 try:
     print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Installing requirements' + Fore.RESET)
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", f"{base_path}\\custom_nodes\\dz_facedetailer\\requirements.txt"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", f"{base_path}\\custom_nodes\\DZ-FaceDetailer\\requirements.txt"])
 except:
     print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Installing requirements failed' + Fore.RESET)
 
 model = "https://huggingface.co/Bingsu/adetailer/resolve/main/face_yolov8n.pt"
 
-save_loc = f"{base_path}\models\dz_facedetailer\yolo\/face_yolov8n.pt"
+save_loc = f"{base_path}\models\DZ-FaceDetailer\yolo\/face_yolov8n.pt"
 
 save_dir = os.path.dirname(save_loc)
 
@@ -49,7 +49,7 @@ def download_model():
         except requests.exceptions.RequestException as err:
             print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Model download failed: {err}' + Fore.RESET)
             print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Download it manually from: {model}' + Fore.RESET)
-            print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}And put it in /comfyui/models/dz_facedetailer/yolo/' + Fore.RESET)
+            print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}And put it in /comfyui/models/DZ-FaceDetailer/yolo/' + Fore.RESET)
         except Exception as e:
             print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}An unexpected error occurred: {e}' + Fore.RESET)
 
