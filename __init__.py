@@ -60,7 +60,7 @@ else:
     print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Model dir already exists' + Fore.RESET)
     download_model()
 
-from .FaceDetailer import FaceDetailer
+from .DZFaceDetailer import FaceDetailer
 
 NODE_CLASS_MAPPINGS = {
     "DZ_Face_Detailer": FaceDetailer,
