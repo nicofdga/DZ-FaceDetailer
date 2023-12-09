@@ -11,7 +11,7 @@ from folder_paths import base_path
 
 face_model_path = os.path.join(base_path, "models/DZ-FaceDetailer/yolo/face_yolov8n.pt")
 MASK_CONTROL = ["dilate", "erode", "disabled"]
-MASK_TYPE = ["box", "face"]
+MASK_TYPE = ["face", "box"]
 
 class FaceDetailer:
     @classmethod
@@ -52,12 +52,12 @@ class FaceDetailer:
         # Process the face mesh or make the face box for masking
         if mask_type == "box":
             try:
-                final_mask = facebox_mask(img, mask_type)
+                final_mask = facebox_mask(img)
             except:
                 return (latent_image, )
         else:
             try:
-                final_mask = facemesh_mask(img, mask_type)
+                final_mask = facemesh_mask(img)
             except:
                 return (latent_image, )
         # Erode/Dilate mask
@@ -86,67 +86,121 @@ class FaceDetailer:
         return (latent[0], final_mask,)
 
 
-def facebox_mask(image, mask_type):
+def facebox_mask(image):
+    # Create an empty image with alpha
+    mask = np.zeros((image.shape[0], image.shape[1], 4), dtype=np.uint8)
+
     # setup yolov8n face detection model
     face_model = YOLO(face_model_path)
     face_bbox = face_model(image)
     boxes = face_bbox[0].boxes
-    box = boxes[0].xyxy
-    x_min, y_min, x_max, y_max = box[0].tolist()
+    # box = boxes[0].xyxy
+    for box in boxes.xyxy:
+        x_min, y_min, x_max, y_max = box.tolist()
+        # Calculate the center of the bounding box
+        center_x = (x_min + x_max) / 2
+        center_y = (y_min + y_max) / 2
 
-    # Calculate the center of the bounding box
-    center_x = (x_min + x_max) / 2
-    center_y = (y_min + y_max) / 2
+        # Calcule the maximum width and height
+        width = x_max - x_min
+        height = y_max - y_min
+        max_size = max(width, height)
 
-    # Calcule the maximum width and height
-    width = x_max - x_min
-    height = y_max - y_min
-    max_size = max(width, height)
+        # Get the new WxH for a ratio of 1:1
+        new_width = max_size
+        new_height = max_size
 
-    # Get the new WxH for a ratio of 1:1
-    new_width = max_size
-    new_height = max_size
+        # Calculate the new coordinates
+        new_x_min = int(center_x - new_width / 2)
+        new_y_min = int(center_y - new_height / 2)
+        new_x_max = int(center_x + new_width / 2)
+        new_y_max = int(center_y + new_height / 2)
 
-    # Calculate the new coordinates
-    new_x_min = int(center_x - new_width / 2)
-    new_y_min = int(center_y - new_height / 2)
-    new_x_max = int(center_x + new_width / 2)
-    new_y_max = int(center_y + new_height / 2)
+        # print((new_x_min, new_y_min), (new_x_max, new_y_max))
+        # set the square in the face location
+        cv2.rectangle(mask, (new_x_min, new_y_min), (new_x_max, new_y_max), (0, 0, 0, 255), -1)
+        testing = image.copy()
+        testing = testing[new_y_min:new_y_max, new_x_min:new_x_max, :]
+        cv2.imwrite("xd.jpg", testing)
 
-    # Create an empty image with alpha and set the square in the face location
-    mask = np.zeros((image.shape[0], image.shape[1], 4), dtype=np.uint8)
-    cv2.rectangle(mask, (new_x_min, new_y_min), (new_x_max, new_y_max), (0, 0, 0, 255), -1)
     mask[:, :, 3] = ~mask[:, :, 3]  # invert the mask
 
     return mask
 
 
-def facemesh_mask(image, mask_type):
-    mp_face_mesh = solutions.face_mesh
-    face_mesh = mp_face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1)
-    results = face_mesh.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-    if results.multi_face_landmarks:
-        for face_landmarks in results.multi_face_landmarks:
-            # List of detected face points
-            points = []
-            for landmark in face_landmarks.landmark:
-                cx, cy = int(
-                    landmark.x * image.shape[1]), int(landmark.y * image.shape[0])
-                points.append([cx, cy])
+def facemesh_mask(image):
 
-            # Empty image with the same shape as input
-            mask = np.zeros(
-                (image.shape[0], image.shape[1], 4), dtype=np.uint8)
+    faces_mask = []
 
-            # Obtain the countour of the face
-            convex_hull = cv2.convexHull(np.array(points))
+    # Empty image with the same shape as input
+    mask = np.zeros(
+        (image.shape[0], image.shape[1], 4), dtype=np.uint8)
+    
+    # setup yolov8n face detection model
+    face_model = YOLO(face_model_path)
+    face_bbox = face_model(image)
+    boxes = face_bbox[0].boxes
+    # box = boxes[0].xyxy
+    for box in boxes.xyxy:
+        x_min, y_min, x_max, y_max = box.tolist()
+        # Calculate the center of the bounding box
+        center_x = (x_min + x_max) / 2
+        center_y = (y_min + y_max) / 2
 
-            # Fill the contour and store it in alpha for the mask
-            cv2.fillConvexPoly(mask, convex_hull, (0, 0, 0, 255))
-            mask[:, :, 3] = ~mask[:, :, 3]
+        # Calcule the maximum width and height
+        width = x_max - x_min
+        height = y_max - y_min
+        max_size = max(width, height)
 
-            return mask
+        # Get the new WxH for a ratio of 1:1
+        new_width = max_size
+        new_height = max_size
 
+        # Calculate the new coordinates
+        new_x_min = int(center_x - new_width / 2)
+        new_y_min = int(center_y - new_height / 2)
+        new_x_max = int(center_x + new_width / 2)
+        new_y_max = int(center_y + new_height / 2)
+
+        # print((new_x_min, new_y_min), (new_x_max, new_y_max))
+        # set the square in the face location
+        face = image[new_y_min:new_y_max, new_x_min:new_x_max, :]
+
+        mp_face_mesh = solutions.face_mesh
+        face_mesh = mp_face_mesh.FaceMesh(static_image_mode=True, max_num_faces=1, min_detection_confidence=0.5)
+        results = face_mesh.process(cv2.cvtColor(face, cv2.COLOR_BGR2RGB))
+        if results.multi_face_landmarks:
+            for face_landmarks in results.multi_face_landmarks:
+                # List of detected face points
+                points = []
+                for landmark in face_landmarks.landmark:
+                    cx, cy = int(
+                        landmark.x * face.shape[1]), int(landmark.y * face.shape[0])
+                    points.append([cx, cy])
+
+                face_mask = np.zeros((face.shape[0], face.shape[1], 4), dtype=np.uint8)
+
+                # Obtain the countour of the face
+                convex_hull = cv2.convexHull(np.array(points))
+                
+                # Fill the contour and store it in alpha for the mask
+                cv2.fillConvexPoly(face_mask, convex_hull, (0, 0, 0, 255))
+
+                faces_mask.append([face_mask, [new_x_min, new_x_max, new_y_min, new_y_max]])
+            
+    for face_mask in faces_mask:
+        paste_numpy_images(mask, face_mask[0], face_mask[1][0], face_mask[1][1], face_mask[1][2], face_mask[1][3])
+
+    print(f"{len(faces_mask)} faces detected")
+    mask[:, :, 3] = ~mask[:, :, 3]
+    return mask
+
+
+def paste_numpy_images(target_image, source_image, x_min, x_max, y_min, y_max):
+    # Paste the source image into the target image at the specified coordinates
+    target_image[y_min:y_max, x_min:x_max, :] = source_image
+
+    return target_image
 
 def erode_mask(mask, dilate):
     # I use erode function because the mask is inverted
@@ -185,6 +239,5 @@ def image2nparray(image, BGR):
 
 def set_mask(samples, mask):
     s = samples.copy()
-    print(s)
     s["noise_mask"] = mask.reshape((-1, 1, mask.shape[-2], mask.shape[-1]))
     return s

@@ -545,32 +545,6 @@
       "bgcolor": "#533"
     },
     {
-      "id": 23,
-      "type": "PreviewImage",
-      "pos": [
-        2905.4059446271544,
-        391.4753301214381
-      ],
-      "size": {
-        "0": 300.9404296875,
-        "1": 440.5021057128906
-      },
-      "flags": {},
-      "order": 26,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 43,
-          "slot_index": 0
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
-      }
-    },
-    {
       "id": 24,
       "type": "Reroute",
       "pos": [
@@ -605,31 +579,6 @@
       "properties": {
         "showOutputText": false,
         "horizontal": false
-      }
-    },
-    {
-      "id": 14,
-      "type": "PreviewImage",
-      "pos": [
-        3271.3467063344615,
-        384.1296736506407
-      ],
-      "size": {
-        "0": 318.26812744140625,
-        "1": 461.947265625
-      },
-      "flags": {},
-      "order": 20,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "images",
-          "type": "IMAGE",
-          "link": 47
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "PreviewImage"
       }
     },
     {
@@ -702,7 +651,7 @@
         "Node name for S&R": "DZ_Face_Detailer"
       },
       "widgets_values": [
-        48098681251663,
+        465341715093210,
         "randomize",
         20,
         7,
@@ -957,7 +906,7 @@
         "Node name for S&R": "KSampler"
       },
       "widgets_values": [
-        662123511475493,
+        888117471012813,
         "randomize",
         15,
         7,
@@ -1145,6 +1094,57 @@
       ],
       "color": "#223",
       "bgcolor": "#335"
+    },
+    {
+      "id": 14,
+      "type": "PreviewImage",
+      "pos": [
+        3255,
+        420
+      ],
+      "size": [
+        331.1569279423511,
+        354.9488064968368
+      ],
+      "flags": {},
+      "order": 20,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 47
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      }
+    },
+    {
+      "id": 23,
+      "type": "PreviewImage",
+      "pos": [
+        2858.480640089445,
+        425.4401372391366
+      ],
+      "size": [
+        325.9292706156648,
+        359.02643171887235
+      ],
+      "flags": {},
+      "order": 26,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 43,
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PreviewImage"
+      }
     }
   ],
   "links": [
@@ -1468,10 +1468,10 @@
     {
       "title": "Detailer",
       "bounding": [
-        2887,
-        286,
-        337,
-        592
+        2816,
+        278,
+        411,
+        596
       ],
       "color": "#8A8",
       "font_size": 24
