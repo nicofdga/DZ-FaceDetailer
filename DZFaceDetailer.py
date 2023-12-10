@@ -73,10 +73,9 @@ class FaceDetailer:
                 ImageFilter.GaussianBlur(radius=mask_blur))
             final_mask = np.array(blurred_mask_image)
 
-        final_mask = np.array(Image.fromarray(
-            final_mask).getchannel('A')).astype(np.float32) / 255.0
+        final_mask = np.array(Image.fromarray(final_mask).getchannel('A')).astype(np.float32) / 255.0
         # Convert mask to tensor and assign the mask to the input tensor
-        final_mask = 1. - torch.from_numpy(final_mask)
+        final_mask = torch.from_numpy(final_mask)
 
         latent_mask = set_mask(latent_image, final_mask)
 
@@ -119,11 +118,8 @@ def facebox_mask(image):
         # print((new_x_min, new_y_min), (new_x_max, new_y_max))
         # set the square in the face location
         cv2.rectangle(mask, (new_x_min, new_y_min), (new_x_max, new_y_max), (0, 0, 0, 255), -1)
-        testing = image.copy()
-        testing = testing[new_y_min:new_y_max, new_x_min:new_x_max, :]
-        cv2.imwrite("xd.jpg", testing)
 
-    mask[:, :, 3] = ~mask[:, :, 3]  # invert the mask
+    # mask[:, :, 3] = ~mask[:, :, 3]  # invert the mask
 
     return mask
 
@@ -191,8 +187,8 @@ def facemesh_mask(image):
     for face_mask in faces_mask:
         paste_numpy_images(mask, face_mask[0], face_mask[1][0], face_mask[1][1], face_mask[1][2], face_mask[1][3])
 
-    print(f"{len(faces_mask)} faces detected")
-    mask[:, :, 3] = ~mask[:, :, 3]
+    # print(f"{len(faces_mask)} faces detected")
+    # mask[:, :, 3] = ~mask[:, :, 3]
     return mask
 
 

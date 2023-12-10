@@ -1,8 +1,6 @@
-
 import requests
 import os, sys
 import subprocess
-from colorama import Fore, Back, Style
 from tqdm import tqdm
 from pip._internal import main as pip_main
 from pathlib import Path
@@ -10,11 +8,10 @@ from folder_paths import models_dir
 
 try:
     import mediapipe
-    from .DZFaceDetailer import FaceDetailer
 except:
-    print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Installing requirements' + Fore.RESET)
+    print('FaceDetailer: Installing requirements')
     my_path = os.path.dirname(__file__)
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", os.path.join(my_path, "requirements.txt")])
+    subprocess.check_call([sys.executable, "-s", "-m", "pip", "install", "-r", os.path.join(my_path, "requirements.txt")])
 
 model_url = "https://huggingface.co/Bingsu/adetailer/resolve/main/face_yolov8n.pt"
 
@@ -22,10 +19,10 @@ save_loc = os.path.join(models_dir, "DZ-FaceDetailer\yolo")
 
 def download_model():
     if Path(os.path.join(save_loc, "face_yolov8n.pt")).is_file():
-        print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Model already exists' + Fore.RESET)
+        print('FaceDetailer: Model already exists')
     else:
-        print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Model doesnt exist' + Fore.RESET)
-        print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Downloading model' + Fore.RESET)
+        print('FaceDetailer: Model doesnt exist')
+        print('FaceDetailer: Downloading model')
         response = requests.get(model_url, stream=True)
 
         try:
@@ -45,21 +42,23 @@ def download_model():
                         bar.update(len(data))
                         file.write(data)
 
-                print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Model download finished' + Fore.RESET)
+                print('FaceDetailer: Model download finished')
         except requests.exceptions.RequestException as err:
-            print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Model download failed: {err}' + Fore.RESET)
-            print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}Download it manually from: {model_url}' + Fore.RESET)
-            print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}And put it in /comfyui/models/DZ-FaceDetailer/yolo/' + Fore.RESET)
+            print('FaceDetailer: Model download failed: {err}')
+            print(f'FaceDetailer: Download it manually from: {model_url}')
+            print('FaceDetailer: And put it in /comfyui/models/DZ-FaceDetailer/yolo/')
         except Exception as e:
-            print(Fore.RED + 'FaceDetailer: ' + f'{Fore.WHITE}An unexpected error occurred: {e}' + Fore.RESET)
+            print(f'FaceDetailer: An unexpected error occurred: {e}')
 
 if not os.path.exists(save_loc):
-    print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Creating models directory' + Fore.RESET)
+    print('FaceDetailer: Creating models directory')
     os.makedirs(save_loc)
     download_model()
 else:
-    print(Fore.GREEN + 'FaceDetailer: ' + f'{Fore.WHITE}Model directory already exists' + Fore.RESET)
+    print('FaceDetailer: Model directory already exists')
     download_model()
+
+from .DZFaceDetailer import FaceDetailer
 
 NODE_CLASS_MAPPINGS = {
     "DZ_Face_Detailer": FaceDetailer,
