@@ -16,6 +16,7 @@ DZ FaceDetailer is a custom node for the "ComfyUI" framework inspired by !After 
 ## Features
 
 - Face detection using Mediapipe.
+- Multiple face detection support on both models
 - Face mask generation for detected faces.
 - Latent/sample mapping to generated masks for face manipulation.
 - Generate new faces using Stable Diffusion.
