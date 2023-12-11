@@ -9,7 +9,7 @@ import comfy
 import nodes
 from folder_paths import base_path
 
-face_model_path = os.path.join(base_path, "models/DZ-FaceDetailer/yolo/face_yolov8n.pt")
+face_model_path = os.path.join(base_path, "models/dz_facedetailer/yolo/face_yolov8n.pt")
 MASK_CONTROL = ["dilate", "erode", "disabled"]
 MASK_TYPE = ["face", "box"]
 
@@ -51,15 +51,9 @@ class FaceDetailer:
         img = image2nparray(input_tensor_img, False)
         # Process the face mesh or make the face box for masking
         if mask_type == "box":
-            try:
-                final_mask = facebox_mask(img)
-            except:
-                return (latent_image, )
+            final_mask = facebox_mask(img)
         else:
-            try:
-                final_mask = facemesh_mask(img)
-            except:
-                return (latent_image, )
+            final_mask = facemesh_mask(img)
         # Erode/Dilate mask
         if mask_control == "dilate":
             if dilate_mask_value > 0:

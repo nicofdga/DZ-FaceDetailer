@@ -15,7 +15,7 @@ except:
 
 model_url = "https://huggingface.co/Bingsu/adetailer/resolve/main/face_yolov8n.pt"
 
-save_loc = os.path.join(models_dir, "DZ-FaceDetailer\yolo")
+save_loc = os.path.join(models_dir, "dz_facedetailer", "yolo")
 
 def download_model():
     if Path(os.path.join(save_loc, "face_yolov8n.pt")).is_file():
@@ -46,13 +46,13 @@ def download_model():
         except requests.exceptions.RequestException as err:
             print('FaceDetailer: Model download failed: {err}')
             print(f'FaceDetailer: Download it manually from: {model_url}')
-            print('FaceDetailer: And put it in /comfyui/models/DZ-FaceDetailer/yolo/')
+            print('FaceDetailer: And put it in /comfyui/models/dz_facedetailer/yolo/')
         except Exception as e:
             print(f'FaceDetailer: An unexpected error occurred: {e}')
 
 if not os.path.exists(save_loc):
     print('FaceDetailer: Creating models directory')
-    os.makedirs(save_loc)
+    os.makedirs(save_loc, exist_ok=True)
     download_model()
 else:
     print('FaceDetailer: Model directory already exists')
