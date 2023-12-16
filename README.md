@@ -21,6 +21,7 @@ DZ FaceDetailer is a custom node for the "ComfyUI" framework inspired by !After 
 - Latent/sample mapping to generated masks for face manipulation.
 - Generate new faces using Stable Diffusion.
 - Replace faces using LoRa or embeddings etc.
+- batch images support
 
 ## Installation
 clone the repo https://github.com/daxthin/DZ-FaceDetailer.git in custom_nodes folder
