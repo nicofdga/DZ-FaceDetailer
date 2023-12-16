@@ -45,39 +45,78 @@ class FaceDetailer:
     CATEGORY = "face_detailer"
 
     def detailer(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise, vae, mask_blur, mask_type, mask_control, dilate_mask_value, erode_mask_value):
+
         # input latent decoded to tensor image for processing
-        input_tensor_img = vae.decode(latent_image["samples"])
-        # convert input latent to numpy array for yolo model
-        img = image2nparray(input_tensor_img, False)
-        # Process the face mesh or make the face box for masking
-        if mask_type == "box":
-            final_mask = facebox_mask(img)
-        else:
-            final_mask = facemesh_mask(img)
+        tensor_img = vae.decode(latent_image["samples"])
+
+        batch_size = tensor_img.shape[0]
+
+        mask = Detection().detect_faces(tensor_img, batch_size, mask_type, mask_control, mask_blur, dilate_mask_value, erode_mask_value)
+
+        latent_mask = set_mask(latent_image, mask)
+
+        latent = nodes.common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_mask, denoise=denoise)
+
+        return (latent[0], latent[0]["noise_mask"],)
+
+class Detection:
+    def __init__(self):
+        pass
+
+    def detect_faces(self, tensor_img, batch_size, mask_type, mask_control, mask_blur, mask_dilate, mask_erode):
+        mask_imgs = []
+        for i in range(0, batch_size):
+            # print(input_tensor_img[i, :,:,:].shape)
+            # convert input latent to numpy array for yolo model
+            img = image2nparray(tensor_img[i], False)
+            # Process the face mesh or make the face box for masking
+            if mask_type == "box":
+                final_mask = facebox_mask(img)
+            else:
+                final_mask = facemesh_mask(img)
+
+            final_mask = self.mask_control(final_mask, mask_control, mask_blur, mask_dilate, mask_erode)
+
+            final_mask = np.array(Image.fromarray(final_mask).getchannel('A')).astype(np.float32) / 255.0
+            # Convert mask to tensor and assign the mask to the input tensor
+            final_mask = torch.from_numpy(final_mask)
+
+            mask_imgs.append(final_mask)
+
+        final_mask = torch.stack(mask_imgs)
+
+        return final_mask
+
+    def mask_control(self, numpy_img, mask_control, mask_blur, mask_dilate, mask_erode):
+        numpy_image = numpy_img.copy();
         # Erode/Dilate mask
         if mask_control == "dilate":
-            if dilate_mask_value > 0:
-                final_mask = dilate_mask(final_mask, dilate_mask_value)
+            if mask_dilate > 0:
+                numpy_image = self.dilate_mask(numpy_image, mask_dilate)
         elif mask_control == "erode":
-            if erode_mask_value > 0:
-                final_mask = erode_mask(final_mask, erode_mask_value)
+            if mask_erode > 0:
+                numpy_image = self.erode_mask(numpy_image, mask_erode)
         if mask_blur > 0:
-            final_mask_image = Image.fromarray(final_mask)
+            final_mask_image = Image.fromarray(numpy_image)
             blurred_mask_image = final_mask_image.filter(
                 ImageFilter.GaussianBlur(radius=mask_blur))
-            final_mask = np.array(blurred_mask_image)
+            numpy_image = np.array(blurred_mask_image)
 
-        final_mask = np.array(Image.fromarray(final_mask).getchannel('A')).astype(np.float32) / 255.0
-        # Convert mask to tensor and assign the mask to the input tensor
-        final_mask = torch.from_numpy(final_mask)
+        return numpy_image
 
-        latent_mask = set_mask(latent_image, final_mask)
+    def erode_mask(self, mask, dilate):
+        # I use erode function because the mask is inverted
+        # later I will fix it
+        kernel = np.ones((int(dilate), int(dilate)), np.uint8)
+        dilated_mask = cv2.dilate(mask, kernel, iterations=1)
+        return dilated_mask
 
-        latent = nodes.common_ksampler(
-            model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_mask, denoise=denoise)
-
-        return (latent[0], final_mask,)
-
+    def dilate_mask(self, mask, erode):
+        # I use dilate function because the mask is inverted like the other function
+        # later I will fix it
+        kernel = np.ones((int(erode), int(erode)), np.uint8)
+        eroded_mask = cv2.erode(mask, kernel, iterations=1)
+        return eroded_mask
 
 def facebox_mask(image):
     # Create an empty image with alpha
@@ -192,20 +231,6 @@ def paste_numpy_images(target_image, source_image, x_min, x_max, y_min, y_max):
 
     return target_image
 
-def erode_mask(mask, dilate):
-    # I use erode function because the mask is inverted
-    # later I will fix it
-    kernel = np.ones((int(dilate), int(dilate)), np.uint8)
-    dilated_mask = cv2.dilate(mask, kernel, iterations=1)
-    return dilated_mask
-
-
-def dilate_mask(mask, erode):
-    # I use dilate function because the mask is inverted like the other function
-    # later I will fix it
-    kernel = np.ones((int(erode), int(erode)), np.uint8)
-    eroded_mask = cv2.erode(mask, kernel, iterations=1)
-    return eroded_mask
 
 
 def image2nparray(image, BGR):
