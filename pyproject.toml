@@ -1,0 +1,15 @@
+[project]
+name = "dz-facedetailer"
+description = ""
+version = "1.0.0"
+license = "LICENSE"
+dependencies = ["ultralytics", "mediapipe"]
+
+[project.urls]
+Repository = "https://github.com/nicofdga/DZ-FaceDetailer"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "DZ-FaceDetailer"
+Icon = ""
