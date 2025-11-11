@@ -1,2 +1,20 @@
-ultralytics
-mediapipe
+# DZ-FaceDetailer Requirements
+#
+# NOTE: For modern installations, use pyproject.toml:
+#   pip install -e .
+#   pip install -e .[flash-attn]  # for optional flash attention support
+#
+# This requirements.txt is maintained for backward compatibility during transition.
+
+# Core dependencies
+ultralytics>=8.0.0
+opencv-contrib-python>=4.9.0
+pillow>=10.0.0
+torch>=2.1.0
+torchvision>=0.16.0
+numpy>=1.26,<3
+requests>=2.31.0
+pyyaml>=6.0
+
+# Note: mediapipe has been REMOVED due to protobuf>=5 conflicts
+# Face landmark detection now uses OpenCV (opencv-contrib-python)
