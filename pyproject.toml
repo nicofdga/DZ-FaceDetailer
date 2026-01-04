@@ -1,0 +1,93 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dz-facedetailer"
+version = "2.0.0"
+description = "Face detection and detailing for ComfyUI using YOLOv8 and OpenCV"
+readme = "README.md"
+requires-python = ">=3.10,<3.14"
+license = {text = "MIT"}
+authors = [
+    {name = "daxthin", email = ""},
+]
+keywords = ["comfyui", "face-detection", "yolo", "opencv", "stable-diffusion"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+# Core dependencies - everything needed for basic functionality
+dependencies = [
+    "ultralytics>=8.0.0",
+    "opencv-contrib-python>=4.9.0",
+    "pillow>=10.0.0",
+    "torch>=2.1.0",
+    "torchvision>=0.16.0",
+    "numpy>=1.26,<3",
+    "requests>=2.31.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# Flash attention for optimized transformer operations (future-proofing)
+flash-attn = [
+    "flash-attn>=2.7.1,<=2.8.2",
+]
+
+# xformers for memory-efficient attention (future-proofing)
+xformers = [
+    "xformers",
+]
+
+# All optional dependencies
+all = [
+    "flash-attn>=2.7.1,<=2.8.2",
+    "xformers",
+]
+
+# Development dependencies (tests, linting, etc - for future use)
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/daxthin/DZ-FaceDetailer"
+Repository = "https://github.com/daxthin/DZ-FaceDetailer"
+Issues = "https://github.com/daxthin/DZ-FaceDetailer/issues"
+
+[tool.setuptools]
+packages = [""]
+
+[tool.setuptools.package-data]
+"*" = ["*.pt", "*.yaml", "*.json"]
+
+[tool.black]
+line-length = 120
+target-version = ['py310', 'py311', 'py312']
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
